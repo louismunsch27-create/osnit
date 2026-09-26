@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Osnit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root{
+    --bg:#F5F6F3; --surface:#FFFFFF; --surface-2:#F0F1ED;
+    --border:#E1E3DC; --border-strong:#CBCEC3;
+    --text:#12130F; --text-dim:#6B6E63; --text-faint:#9A9C90;
+    --accent:#0E7C5A; --accent-ink:#FFFFFF; --accent-wash:#E3F3EA;
+    --danger:#B5442E; --danger-wash:#F7E7E2;
+    --radius-sm:6px; --radius:10px; --radius-lg:18px;
+    --shadow: 0 1px 2px rgba(18,19,15,.05), 0 6px 16px rgba(18,19,15,.05);
+    --shadow-lift: 0 10px 30px rgba(18,19,15,.10);
+    --syn-comment:#9A9C90; --syn-string:#8A6D3B; --syn-number:#3B6EA5; --syn-attr:#6B4FA0;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --bg:#101210; --surface:#171913; --surface-2:#1D201A;
+      --border:#2B2E26; --border-strong:#3B3E33;
+      --text:#EDEEE6; --text-dim:#9A9C8F; --text-faint:#6B6E60;
+      --accent:#3ED694; --accent-ink:#0A140F; --accent-wash:#173226;
+      --danger:#E4795F; --danger-wash:#3A211B;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.28);
+      --shadow-lift: 0 14px 34px rgba(0,0,0,.4);
+      --syn-comment:#6B6E60; --syn-string:#D9B871; --syn-number:#7FB0E0; --syn-attr:#B79EE0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101210; --surface:#171913; --surface-2:#1D201A;
+    --border:#2B2E26; --border-strong:#3B3E33;
+    --text:#EDEEE6; --text-dim:#9A9C8F; --text-faint:#6B6E60;
+    --accent:#3ED694; --accent-ink:#0A140F; --accent-wash:#173226;
+    --danger:#E4795F; --danger-wash:#3A211B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.28);
+    --shadow-lift: 0 14px 34px rgba(0,0,0,.4);
+    --syn-comment:#6B6E60; --syn-string:#D9B871; --syn-number:#7FB0E0; --syn-attr:#B79EE0;
+  }
+
+  :root[data-accent="blue"]{ --accent:#1D63D1; --accent-wash:#E4EDFB; }
+  :root[data-accent="red"]{ --accent:#C4342A; --accent-wash:#FBE7E5; }
+  :root[data-accent="orange"]{ --accent:#C15A1E; --accent-wash:#FBEADD; }
+  :root[data-accent="purple"]{ --accent:#6D3FC4; --accent-wash:#EFE7FB; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"])[data-accent="blue"]{ --accent:#5B9BFF; --accent-wash:#142338; }
+    :root:not([data-theme="light"])[data-accent="red"]{ --accent:#F2665A; --accent-wash:#341B18; }
+    :root:not([data-theme="light"])[data-accent="orange"]{ --accent:#F2924E; --accent-wash:#3A2515; }
+    :root:not([data-theme="light"])[data-accent="purple"]{ --accent:#B08CFF; --accent-wash:#241A3A; }
+  }
+  :root[data-theme="dark"][data-accent="blue"]{ --accent:#5B9BFF; --accent-wash:#142338; }
+  :root[data-theme="dark"][data-accent="red"]{ --accent:#F2665A; --accent-wash:#341B18; }
+  :root[data-theme="dark"][data-accent="orange"]{ --accent:#F2924E; --accent-wash:#3A2515; }
+  :root[data-theme="dark"][data-accent="purple"]{ --accent:#B08CFF; --accent-wash:#241A3A; }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Space Grotesk', ui-sans-serif, sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
+  code, pre, .mono{ font-family:'JetBrains Mono', ui-monospace, monospace; }
+
+  .app{ display:flex; flex-direction:column; height:100vh; height:100dvh; }
+
+  header{
+    display:flex; align-items:center; gap:14px;
+    padding:15px 24px; border-bottom:1px solid var(--border);
+    background:var(--surface); flex-shrink:0;
+  }
+  .logo{
+    width:30px; height:30px; border-radius:9px; background:var(--accent);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 2px 6px rgba(18,19,15,.16);
+  }
+  .logo svg{ width:16px; height:16px; }
+  header h1{ font-weight:700; font-size:20px; letter-spacing:-.02em; }
+  header .tag{ color:var(--text-faint); font-size:13.5px; padding-left:14px; border-left:1px solid var(--border); }
+  header .who{ margin-left:auto; color:var(--text-dim); font-size:13.5px; display:flex; align-items:center; gap:6px; }
+  .who .dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); }
+
+  .accent-swatches{ display:flex; gap:7px; margin-left:14px; }
+  .swatch{ width:17px; height:17px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; transition:transform .12s ease; }
+  .swatch:hover{ border-color:var(--border-strong); transform:scale(1.12); }
+  .swatch.active{ border-color:var(--text); }
+
+  .notice{ font-size:13.5px; color:var(--text-dim); padding:8px 24px; border-bottom:1px solid var(--border); background:var(--surface-2); }
+
+  .welcome{
+    display:flex; align-items:center; gap:16px; padding:14px 24px;
+    background:var(--accent-wash); border-bottom:1px solid var(--border);
+  }
+  .welcome-text{ flex:1; min-width:0; }
+  .welcome-text strong{ color:var(--text); }
+  .welcome-text span{ color:var(--text-dim); font-size:13.5px; }
+  .welcome-actions{ display:flex; gap:8px; flex-shrink:0; align-items:center; }
+  @media (max-width: 640px){
+    .welcome{ flex-wrap:wrap; }
+  }
+
+  .tabs{
+    display:flex; gap:4px; justify-content:center;
+    padding:10px 24px calc(10px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--border); border-bottom:none;
+    background:var(--surface); flex-shrink:0;
+  }
+  .tab{
+    font-size:13px; font-weight:500; padding:7px 14px; border-radius:20px;
+    border:1px solid transparent; color:var(--text-dim); cursor:pointer; background:none;
+    transition:background .12s ease, color .12s ease;
+  }
+  .tab:hover{ background:var(--surface-2); color:var(--text); }
+  .tab.active{ background:var(--accent-wash); color:var(--accent); font-weight:600; }
+
+  .owner-link{ cursor:pointer; }
+  .owner-link:hover{ text-decoration:underline; color:var(--text); }
+
+  .profile-view{ flex:1; overflow-y:auto; padding:28px 24px; max-width:640px; }
+  .profile-card{ display:flex; gap:16px; align-items:center; margin-bottom:22px; }
+  .profile-card img{ width:52px; height:52px; border-radius:50%; }
+  .profile-card .pname{ font-weight:700; font-size:17px; }
+  .profile-card .pmeta{ font-size:12.5px; color:var(--text-faint); }
+  .profile-view h3{ font-size:14px; font-weight:600; margin:22px 0 10px; }
+  .profile-list{ display:flex; flex-direction:column; gap:0; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .profile-list .entry{ border-bottom:1px solid var(--border); }
+  .profile-list .entry:last-child{ border-bottom:none; }
+  .profile-empty{ font-size:13px; color:var(--text-faint); padding:14px; border:1px dashed var(--border); border-radius:var(--radius); }
+
+  .assistant-view{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .chat-log{ flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:12px; }
+  .chat-intro{ max-width:440px; margin:auto; text-align:center; color:var(--text-dim); }
+  .chat-intro-title{ font-weight:700; font-size:16px; color:var(--text); margin-bottom:6px; }
+  .chat-intro-sub{ font-size:13.5px; line-height:1.6; }
+  .chat-bubble{ max-width:72%; padding:10px 14px; border-radius:14px; font-size:14px; line-height:1.55; white-space:pre-wrap; box-shadow:0 1px 2px rgba(18,19,15,.05); }
+  .chat-bubble.user{ align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:4px; }
+  .chat-bubble.assistant{ align-self:flex-start; background:var(--surface-2); border:1px solid var(--border); border-bottom-left-radius:4px; }
+  .chat-bubble.error{ align-self:flex-start; background:var(--danger-wash); color:var(--danger); border:1px solid var(--danger); }
+  .chat-input-row{ display:flex; gap:8px; padding:14px 24px; border-top:1px solid var(--border); background:var(--surface); }
+  .chat-input-row input{ flex:1; }
+
+  .body{ display:flex; flex:1; min-height:0; }
+
+  .list-pane{
+    width:340px; min-width:240px; max-width:45vw;
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; background:var(--surface);
+  }
+  .toolbar{ padding:14px 14px 10px; display:flex; gap:8px; }
+  .toolbar input[type=text]{ flex:1; }
+  .filters-row{ padding:0 14px 12px; display:flex; gap:8px; }
+  .filters-row select{ flex:1; }
+
+  input[type=text], select, textarea{
+    background:var(--bg); border:1px solid var(--border);
+    color:var(--text); font-family:inherit; font-size:14.5px;
+    padding:8px 10px; border-radius:var(--radius); outline:none;
+    transition:border-color .12s ease;
+  }
+  input[type=text]:focus, select:focus, textarea:focus{ border-color:var(--accent); }
+  input[type=text]::placeholder{ color:var(--text-faint); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible,
+  button:focus-visible, .tab:focus-visible, .cat-pill:focus-visible,
+  .entry:focus-visible, .swatch:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  button{
+    font-family:inherit; font-size:14.5px; cursor:pointer;
+    border-radius:var(--radius); border:1px solid var(--border);
+    background:var(--surface); color:var(--text); padding:8px 12px;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .12s ease, background .12s ease, transform .08s ease;
+  }
+  button:hover{ border-color:var(--border-strong); }
+  button:active{ transform:scale(.97); }
+  button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600; box-shadow:0 2px 8px rgba(18,19,15,.14); }
+  button.primary:hover{ opacity:.92; }
+  button.icon{ padding:9px; border-color:transparent; background:none; min-width:34px; min-height:34px; justify-content:center; }
+  button.icon:hover{ background:var(--surface-2); border-color:var(--border); }
+  button.icon svg{ width:15px; height:15px; display:block; }
+  button.danger:hover{ border-color:var(--danger); color:var(--danger); }
+
+  .categories{ display:flex; gap:6px; flex-wrap:wrap; padding:0 14px 12px; border-bottom:1px solid var(--border); }
+  .cat-pill{
+    font-size:13px; padding:4px 10px; border-radius:20px;
+    border:1px solid var(--border); color:var(--text-dim); cursor:pointer;
+    background:var(--bg); user-select:none; white-space:nowrap;
+    display:flex; align-items:center; gap:5px; transition:border-color .12s ease, background .12s ease;
+  }
+  .cat-pill:hover{ border-color:var(--border-strong); color:var(--text); }
+  .cat-pill.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
+  .cat-pill .n{ opacity:.65; }
+  .lang-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+
+  .entries{ overflow-y:auto; flex:1; padding:10px; display:flex; flex-direction:column; gap:6px; }
+  .entry{
+    padding:12px 13px; border:1px solid transparent; border-radius:var(--radius);
+    cursor:pointer; display:flex; flex-direction:column; gap:5px;
+    transition:background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .entry:hover{ background:var(--surface-2); border-color:var(--border); }
+  .entry.active{ background:var(--accent-wash); box-shadow:inset 3px 0 0 var(--accent); }
+  .entry .name{ font-weight:600; color:var(--text); font-size:15px; overflow-wrap:break-word; }
+  .entry .meta{ font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .lang-tag{ display:flex; align-items:center; gap:5px; text-transform:lowercase; }
+  .copy-count{ display:flex; align-items:center; gap:3px; color:var(--text-faint); }
+  .copy-count svg{ width:11px; height:11px; }
+  .empty-list{ padding:28px 18px; color:var(--text-faint); font-size:14px; line-height:1.6; text-align:center; }
+
+  .detail-pane{ flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+  .detail-empty{ flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:14.5px; text-align:center; padding:20px; }
+  .detail-header{ padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:16px; }
+  .detail-header .titles{ flex:1; min-width:0; }
+  .detail-header h2{ font-weight:700; font-size:21px; word-break:break-word; letter-spacing:-.01em; }
+  .detail-header .sub{ font-size:14px; color:var(--text-dim); margin-top:5px; display:flex; align-items:center; gap:7px; }
+  .detail-header .actions{ display:flex; gap:4px; flex-shrink:0; }
+  .detail-desc{ padding:14px 24px 0; font-size:15px; color:var(--text-dim); line-height:1.65; max-width:70ch; }
+  .tags-row{ padding:12px 24px 0; display:flex; gap:6px; flex-wrap:wrap; }
+  .tags-row span{ font-size:13px; color:var(--accent); background:var(--accent-wash); padding:3px 9px; border-radius:20px; }
+  .code-wrap{ flex:1; min-height:0; padding:16px 24px 24px; overflow:auto; }
+  pre{ background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-size:13.5px; line-height:1.7; overflow-x:auto; white-space:pre; }
+  pre code.hljs{ background:none; padding:0; }
+  .hljs-comment, .hljs-quote{ color:var(--syn-comment); font-style:italic; }
+  .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link{ color:var(--accent); font-weight:600; }
+  .hljs-string, .hljs-doctag, .hljs-regexp, .hljs-addition{ color:var(--syn-string); }
+  .hljs-number, .hljs-deletion{ color:var(--syn-number); }
+  .hljs-attr, .hljs-attribute, .hljs-variable, .hljs-template-variable, .hljs-type{ color:var(--syn-attr); }
+  .hljs-title, .hljs-name, .hljs-built_in, .hljs-symbol{ color:var(--text); font-weight:600; }
+  .hljs-meta, .hljs-tag{ color:var(--text-dim); }
+
+  .overlay{ position:fixed; inset:0; background:rgba(10,11,8,.5); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); display:none; align-items:flex-start; justify-content:center; padding:5vh 16px; overflow-y:auto; z-index:10; }
+  .overlay.open{ display:flex; }
+  .modal{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); width:100%; max-width:560px; padding:24px; margin-bottom:5vh; box-shadow:var(--shadow-lift); }
+  .modal h3{ font-weight:700; font-size:19px; margin-bottom:16px; letter-spacing:-.01em; }
+  .field{ margin-bottom:12px; display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:13px; color:var(--text-dim); font-weight:500; }
+  .field input, .field select, .field textarea{ width:100%; }
+  .field textarea{ resize:vertical; min-height:110px; font-size:14px; line-height:1.55; font-family:'JetBrains Mono', monospace; }
+  .row2{ display:flex; gap:10px; }
+  .row2 .field{ flex:1; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+
+  @media (max-width: 720px){
+    .body{ flex-direction:column; }
+    .list-pane{ width:100%; max-width:none; height:42%; border-right:none; border-bottom:1px solid var(--border); }
+    .detail-pane{ height:58%; }
+  }
+  @media (max-width: 640px){
+    header{ flex-wrap:wrap; row-gap:8px; padding:12px 16px; }
+    header .tag{ display:none; }
+    header .who{ margin-left:0; }
+    .accent-swatches{ margin-left:auto; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M8 4 3 12l5 8M16 4l5 8-5 8"/></svg></div>
+    <h1>Osnit</h1>
+    <span class="tag">bibliothèque de scripts open source</span>
+    <span class="who" id="whoami"></span>
+    <div class="accent-swatches" id="accentSwatches"></div>
+  </header>
+  <div class="notice" id="notice" style="display:none;"></div>
+  <div id="welcomeBanner"></div>
+
+  <div class="body" id="libraryBody">
+    <div class="list-pane">
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="Rechercher un script…">
+        <button class="primary" id="btnAdd">+ Ajouter</button>
+      </div>
+      <div class="filters-row">
+        <select id="tagFilter"><option value="">Tous les tags</option></select>
+        <select id="sortBy">
+          <option value="recent">Récents</option>
+          <option value="popular">Populaires</option>
+          <option value="name">Nom A→Z</option>
+        </select>
+      </div>
+      <div class="categories" id="categories"></div>
+      <div id="ownerBanner"></div>
+      <div class="entries" id="entries"></div>
+    </div>
+
+    <div class="detail-pane" id="detailPane">
+      <div class="detail-empty">Sélectionne un script à gauche, ou ajoutes-en un nouveau.</div>
+    </div>
+  </div>
+
+  <div class="profile-view" id="profileView" style="display:none;"></div>
+
+  <div class="assistant-view" id="assistantView" style="display:none;">
+    <div class="chat-log" id="chatLog">
+      <div class="chat-intro">
+        <div class="chat-intro-title">Assistant Osnit</div>
+        <div class="chat-intro-sub">Décris ce que tu cherches — un script, une catégorie, une idée — et je fouille la bibliothèque avec toi.</div>
+      </div>
+    </div>
+    <form class="chat-input-row" id="chatForm">
+      <input type="text" id="chatInput" placeholder="ex : un script pour renommer des fichiers en masse…" autocomplete="off">
+      <button class="primary" type="submit" id="chatSend">Envoyer</button>
+    </form>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Nouveau script</h3>
+    <div class="row2">
+      <div class="field"><label>Nom</label><input type="text" id="fName" placeholder="ex : backup-postgres.sh"></div>
+      <div class="field"><label>Langage</label><input type="text" id="fLang" placeholder="ex : bash, python, js"></div>
+    </div>
+    <div class="field"><label>Description</label><input type="text" id="fDesc" placeholder="À quoi sert ce script ?"></div>
+    <div class="field"><label>Tags (séparés par des virgules)</label><input type="text" id="fTags" placeholder="ex : backup, db, cron"></div>
+    <div class="field"><label>Code</label><textarea id="fCode" placeholder="Colle le script ici…"></textarea></div>
+    <div class="modal-actions">
+      <button id="btnCancel">Annuler</button>
+      <button class="primary" id="btnSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== icônes ===================== */
+const ICONS = {
+  copy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  close: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>`
+};
+
+/* pastille couleur par langage, à la manière des indicateurs de langage
+   des forges de code — une teinte reconnaissable par famille */
+const LANG_COLORS = {
+  python:"#3B82C4", bash:"#89A94E", shell:"#89A94E", sh:"#89A94E",
+  javascript:"#E3B341", js:"#E3B341", typescript:"#3D7ADB", ts:"#3D7ADB",
+  go:"#38C9C3", rust:"#D9622B", ruby:"#D2454A", php:"#7E6AD6",
+  java:"#D9822B", c:"#6E7B91", "c++":"#6E7B91", cpp:"#6E7B91",
+  html:"#E3623F", css:"#4C8EE0", sql:"#5B7FA6", swift:"#E37B3F",
+  kotlin:"#B14EC6", perl:"#4E9A9A", lua:"#3D6BB3", powershell:"#3A83C9"
+};
+function langColor(lang){
+  const k = (lang||'').trim().toLowerCase();
+  return LANG_COLORS[k] || "#9A9C8F";
+}
+
+/* ===================== backend : db + user (avec repli local) ===================== */
+const LOCAL_KEY = "osnit.scripts.v1";
+const LOCAL_ID_KEY = "osnit.localId.v1";
+
+let db = null, userCap = null;
+let myId = null, myName = "";
+let scripts = [];
+let profiles = {};
+let activeId = null, activeLang = null, activeTag = "";
+let sortBy = "recent";
+let activeView = "library"; // "library" | "profile"
+let ownerFilter = null;     // null = tout le monde | myId | id d'un⋅e autre auteur⋅rice
+let osnitProfiles = {};     // id -> {displayName, bio} (profils Osnit, distincts des profils de la plateforme)
+
+function localId(){
+  try{
+    let id = localStorage.getItem(LOCAL_ID_KEY);
+    if(!id){ id = "local_" + Math.random().toString(36).slice(2); localStorage.setItem(LOCAL_ID_KEY, id); }
+    return id;
+  }catch(e){ return "local_anon"; }
+}
+function loadLocal(){
+  try{
+    const raw = localStorage.getItem(LOCAL_KEY);
+    scripts = raw ? JSON.parse(raw) : seed();
+  }catch(e){ scripts = seed(); }
+}
+function saveLocal(){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(scripts)); }catch(e){} }
+function seed(){
+  const now = Date.now();
+  return [
+    {
+      id:"seed1", name:"clean-empty-dirs.sh", lang:"bash",
+      desc:"Supprime récursivement les dossiers vides sous un chemin donné.",
+      tags:["fichiers","nettoyage"], ownerId:myId, createdAt:now, copyCount:14,
+      code:`#!/usr/bin/env bash\nset -euo pipefail\nTARGET="\${1:-.}"\nfind "$TARGET" -type d -empty -delete\necho "Dossiers vides supprimés sous $TARGET"`
+    },
+    {
+      id:"seed2", name:"backup-postgres.sh", lang:"bash",
+      desc:"Sauvegarde une base PostgreSQL avec horodatage et compression.",
+      tags:["backup","db","cron"], ownerId:myId, createdAt:now-1000, copyCount:31,
+      code:`#!/usr/bin/env bash\nset -euo pipefail\nDB="\${1:?Nom de la base requis}"\nSTAMP=$(date +%Y%m%d-%H%M%S)\npg_dump "$DB" | gzip > "backup-$DB-$STAMP.sql.gz"\necho "Sauvegarde créée : backup-$DB-$STAMP.sql.gz"`
+    },
+    {
+      id:"seed3", name:"resize_images.py", lang:"python",
+      desc:"Redimensionne toutes les images d'un dossier en conservant le ratio.",
+      tags:["images","batch"], ownerId:myId, createdAt:now-2000, copyCount:22,
+      code:`from PIL import Image\nimport sys, pathlib\n\nfolder = pathlib.Path(sys.argv[1])\nmax_width = int(sys.argv[2]) if len(sys.argv) > 2 else 1600\n\nfor path in folder.glob("*.[jJpP][pPnN]*[gG]"):\n    img = Image.open(path)\n    if img.width > max_width:\n        ratio = max_width / img.width\n        img = img.resize((max_width, int(img.height * ratio)))\n        img.save(path)\n        print(f"Redimensionné : {path.name}")`
+    },
+    {
+      id:"seed4", name:"debounce.js", lang:"javascript",
+      desc:"Fonction utilitaire de debounce pour limiter les appels répétés.",
+      tags:["utilitaire","front-end"], ownerId:myId, createdAt:now-3000, copyCount:47,
+      code:`function debounce(fn, delay = 300) {\n  let timer;\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), delay);\n  };\n}\n\n// usage : window.addEventListener('resize', debounce(onResize, 200));`
+    },
+    {
+      id:"seed5", name:"find-large-files.sh", lang:"bash",
+      desc:"Liste les 20 plus gros fichiers sous un chemin donné.",
+      tags:["disque","diagnostic"], ownerId:myId, createdAt:now-4000, copyCount:9,
+      code:`#!/usr/bin/env bash\nTARGET="\${1:-.}"\nfind "$TARGET" -type f -exec du -h {} + | sort -rh | head -n 20`
+    }
+  ];
+}
+
+async function resolveProfiles(ids){
+  if(!userCap || ids.length===0) return;
+  try{ profiles = Object.assign({}, profiles, await userCap.profiles(ids)); }catch(e){}
+}
+function nameFor(id){
+  const custom = osnitProfiles[id] && osnitProfiles[id].displayName;
+  if(custom) return custom;
+  const p = profiles[id];
+  return (p && p.name) || "un⋅e contributeur⋅rice";
+}
+function ownerLabel(s){
+  if(!userCap) return "toi";
+  if(s.ownerId === myId) return "toi";
+  return nameFor(s.ownerId);
+}
+function isMine(s){ return !userCap ? true : s.ownerId === myId; }
+
+async function initBackend(){
+  try{ db = await claude.use("db"); }catch(e){ db = null; }
+  try{ userCap = await claude.use("user"); }catch(e){ userCap = null; }
+
+  if(userCap){
+    myId = await userCap.id();
+    const me = await userCap.me();
+    myName = me.name || "";
+  }
+  if(!myId) myId = localId();
+
+  const who = document.getElementById("whoami");
+  who.innerHTML = userCap ? `<span class="dot"></span> ${escapeHtml(myName || "toi")}` : "";
+
+  if(db){
+    db.collection("scripts").onSnapshot(async snap=>{
+      scripts = snap.docs.filter(d=>d.exists).map(d=>({ id:d.id, ...d.data() }));
+      await resolveProfiles([...new Set(scripts.map(s=>s.ownerId).filter(Boolean))]);
+      render();
+    }, err=>{
+      showNotice("Connexion à la bibliothèque partagée impossible — passage en mode local.");
+      db = null; loadLocal(); render();
+    });
+    db.collection("profiles").onSnapshot(snap=>{
+      const map = {};
+      snap.docs.filter(d=>d.exists).forEach(d=>{ map[d.id] = d.data(); });
+      osnitProfiles = map;
+      render();
+    });
+  } else {
+    showNotice("Mode local : tes scripts sont enregistrés uniquement dans ce navigateur.");
+    loadLocal(); render();
+  }
+  renderTabs();
+}
+
+function renderTabs(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = `
+    <button class="tab ${activeView==='library' && ownerFilter===null ? 'active':''}" data-tab="all">Bibliothèque</button>
+    <button class="tab ${activeView==='library' && ownerFilter===myId ? 'active':''}" data-tab="mine">Mes scripts</button>
+    <button class="tab ${activeView==='assistant' ? 'active':''}" data-tab="assistant">IA</button>
+    <button class="tab ${activeView==='profile' ? 'active':''}" data-tab="profile">Profil</button>
+  `;
+  tabs.querySelectorAll('.tab').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const t = el.dataset.tab;
+      const prevOwner = ownerFilter;
+      if(t==='all'){ activeView='library'; ownerFilter=null; }
+      if(t==='mine'){ activeView='library'; ownerFilter=myId; }
+      if(t==='assistant'){ activeView='assistant'; }
+      if(t==='profile'){ activeView='profile'; }
+      if((t==='all'||t==='mine') && ownerFilter!==prevOwner){
+        activeLang = null; activeTag = "";
+        const searchInput = document.getElementById("search");
+        if(searchInput) searchInput.value = "";
+      }
+      activeId = null;
+      render();
+    });
+  });
+}
+function showNotice(msg){
+  const n = document.getElementById("notice");
+  n.textContent = msg; n.style.display = "block";
+}
+
+/* ===================== rendu ===================== */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function langKey(s){ return (s.lang||'autre').trim().toLowerCase(); }
+function scopedScripts(){
+  return ownerFilter===null ? scripts : scripts.filter(s=>s.ownerId===ownerFilter);
+}
+
+function renderCategories(){
+  const base = scopedScripts();
+  const counts = {};
+  base.forEach(s=>{ const k = langKey(s); counts[k] = (counts[k]||0)+1; });
+  const langs = Object.keys(counts).sort();
+  const cats = document.getElementById("categories");
+  if(langs.length===0){ cats.innerHTML = ""; return; }
+  cats.innerHTML = [`<div class="cat-pill ${activeLang===null?'active':''}" data-lang="">Tous<span class="n">${base.length}</span></div>`]
+    .concat(langs.map(l=>`<div class="cat-pill ${activeLang===l?'active':''}" data-lang="${escapeHtml(l)}"><span class="lang-dot" style="background:${langColor(l)}"></span>${escapeHtml(l)}<span class="n">${counts[l]}</span></div>`))
+    .join('');
+  cats.querySelectorAll('.cat-pill').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeLang = el.dataset.lang || null; render(); });
+  });
+}
+function renderTagFilter(){
+  const sel = document.getElementById("tagFilter");
+  const allTags = [...new Set(scopedScripts().flatMap(s=>s.tags||[]))].sort();
+  const current = sel.value;
+  sel.innerHTML = `<option value="">Tous les tags</option>` + allTags.map(t=>`<option value="${escapeHtml(t)}">#${escapeHtml(t)}</option>`).join('');
+  sel.value = allTags.includes(current) ? current : "";
+  activeTag = sel.value;
+}
+
+function render(){
+  renderTabs();
+  document.getElementById("libraryBody").style.display = activeView==='library' ? 'flex' : 'none';
+  document.getElementById("profileView").style.display = activeView==='profile' ? 'block' : 'none';
+  document.getElementById("assistantView").style.display = activeView==='assistant' ? 'flex' : 'none';
+  if(activeView==='profile'){ renderProfileView(); return; }
+  if(activeView==='assistant'){ return; } // le chat gère son propre rendu au fil des messages
+
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  renderCategories();
+  renderTagFilter();
+
+  let filtered = scripts.filter(s=>{
+    if(ownerFilter!==null && s.ownerId!==ownerFilter) return false;
+    if(activeLang!==null && langKey(s)!==activeLang) return false;
+    if(activeTag && !(s.tags||[]).includes(activeTag)) return false;
+    if(!q) return true;
+    return s.name.toLowerCase().includes(q)
+      || (s.desc||"").toLowerCase().includes(q)
+      || (s.tags||[]).some(t=>t.toLowerCase().includes(q));
+  });
+  filtered = filtered.slice().sort((a,b)=>{
+    if(sortBy==='name') return a.name.localeCompare(b.name);
+    if(sortBy==='popular') return (b.copyCount||0)-(a.copyCount||0);
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+
+  const banner = document.getElementById("ownerBanner");
+  if(ownerFilter && ownerFilter!==myId){
+    banner.innerHTML = `<div class="notice" style="padding:8px 14px;">Scripts de <strong>${escapeHtml(nameFor(ownerFilter))}</strong> · <span class="owner-link" id="clearOwner" style="text-decoration:underline;">voir tout le monde</span></div>`;
+    document.getElementById("clearOwner").addEventListener('click', ()=>{ ownerFilter=null; render(); });
+  } else {
+    banner.innerHTML = "";
+  }
+
+  const list = document.getElementById("entries");
+  if(filtered.length===0){
+    const msg = ownerFilter===myId ? "Tu n'as encore rien publié. Ajoute ton premier script !" : "Aucun script ne correspond. Essaie un autre filtre.";
+    list.innerHTML = `<div class="empty-list">${msg}</div>`;
+  } else {
+    list.innerHTML = filtered.map(s=>`
+      <div class="entry ${s.id===activeId?'active':''}" data-id="${s.id}">
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="meta">
+          <span class="lang-tag"><span class="lang-dot" style="background:${langColor(s.lang)}"></span>${escapeHtml(s.lang||'?')}</span>
+          <span class="owner-link" data-owner="${escapeHtml(s.ownerId||'')}">par ${escapeHtml(ownerLabel(s))}</span>
+          ${s.copyCount ? `<span class="copy-count" title="Nombre de copies">${ICONS.copy}${s.copyCount}</span>` : ''}
+          ${(s.tags||[]).slice(0,2).map(t=>`<span>#${escapeHtml(t)}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+    list.querySelectorAll('.entry').forEach(el=>{
+      el.addEventListener('click', ()=>{ activeId = el.dataset.id; render(); });
+    });
+    list.querySelectorAll('.owner-link').forEach(el=>{
+      el.addEventListener('click', e=>{
+        e.stopPropagation();
+        const oid = el.dataset.owner;
+        if(oid){ ownerFilter = oid; activeId = null; render(); }
+      });
+    });
+  }
+  renderDetail();
+}
+
+function renderProfileView(){
+  const pv = document.getElementById("profileView");
+  const mine = scripts.filter(s=>s.ownerId===myId).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const myProfile = osnitProfiles[myId] || {};
+  const avatarUrl = userCap ? null : null;
+
+  pv.innerHTML = `
+    <div class="profile-card">
+      <div class="titles">
+        <div class="pname">${escapeHtml(myProfile.displayName || myName || "Toi")}</div>
+        <div class="pmeta">${userCap ? "identifié⋅e sur cette organisation" : "mode local, sur ce navigateur"}</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Nom affiché dans Osnit (optionnel, remplace ton nom par défaut)</label>
+      <input type="text" id="pDisplayName" placeholder="${escapeHtml(myName || 'Ton nom')}" value="${escapeHtml(myProfile.displayName||'')}">
+    </div>
+    <div class="field">
+      <label>Bio</label>
+      <textarea id="pBio" style="min-height:70px;" placeholder="Quelques mots sur toi ou ce que tu publies…">${escapeHtml(myProfile.bio||'')}</textarea>
+    </div>
+    <button class="primary" id="btnSaveProfile">Enregistrer le profil</button>
+
+    <h3>Tes scripts publiés (${mine.length})</h3>
+    ${mine.length ? `<div class="profile-list">${mine.map(s=>`
+      <div class="entry" data-id="${s.id}">
+        <div class="name">${escapeHtml(s.name)}</div>
+        <div class="meta"><span class="lang-tag"><span class="lang-dot" style="background:${langColor(s.lang)}"></span>${escapeHtml(s.lang||'?')}</span></div>
+      </div>`).join('')}</div>`
+      : `<div class="profile-empty">Tu n'as encore rien publié.</div>`}
+  `;
+
+  pv.querySelectorAll('.profile-list .entry').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      activeView='library'; ownerFilter=myId; activeId = el.dataset.id; render();
+    });
+  });
+
+  document.getElementById("btnSaveProfile").addEventListener('click', async ()=>{
+    const payload = {
+      displayName: document.getElementById("pDisplayName").value.trim(),
+      bio: document.getElementById("pBio").value.trim(),
+      updatedAt: Date.now()
+    };
+    if(db){
+      try{ await db.collection("profiles").doc(myId).set(payload); }catch(e){}
+    } else {
+      osnitProfiles[myId] = payload; render();
+    }
+  });
+}
+
+function renderDetail(){
+  const pane = document.getElementById("detailPane");
+  const s = scripts.find(x=>x.id===activeId);
+  if(!s){
+    pane.innerHTML = `<div class="detail-empty">Sélectionne un script à gauche, ou ajoutes-en un nouveau.</div>`;
+    return;
+  }
+  const mine = isMine(s);
+  pane.innerHTML = `
+    <div class="detail-header">
+      <div class="titles">
+        <h2>${escapeHtml(s.name)}</h2>
+        <div class="sub"><span class="lang-dot" style="background:${langColor(s.lang)}"></span>${escapeHtml(s.lang||'langage inconnu')} · <span class="owner-link" id="detailOwnerLink">par ${escapeHtml(ownerLabel(s))}</span>${s.copyCount ? ` · ${s.copyCount} copie${s.copyCount>1?'s':''}` : ''}</div>
+      </div>
+      <div class="actions">
+        <button class="icon" id="btnCopy" title="Copier">${ICONS.copy}</button>
+        ${mine ? `<button class="icon" id="btnEdit" title="Modifier">${ICONS.edit}</button><button class="icon danger" id="btnDelete" title="Supprimer">${ICONS.trash}</button>` : ''}
+      </div>
+    </div>
+    ${s.desc ? `<div class="detail-desc">${escapeHtml(s.desc)}</div>` : ''}
+    ${(s.tags||[]).length ? `<div class="tags-row">${s.tags.map(t=>`<span>#${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+    <div class="code-wrap"><pre><code>${escapeHtml(s.code)}</code></pre></div>
+  `;
+  if(window.hljs){
+    try{ hljs.highlightElement(pane.querySelector('code')); }catch(e){}
+  }
+  if(s.ownerId && s.ownerId!==myId){
+    document.getElementById("detailOwnerLink").addEventListener('click', ()=>{
+      ownerFilter = s.ownerId; activeId = null; render();
+    });
+  }
+  document.getElementById("btnCopy").addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(s.code);
+      const b = document.getElementById("btnCopy");
+      b.innerHTML = ICONS.check; setTimeout(()=>{ b.innerHTML = ICONS.copy; }, 1400);
+      s.copyCount = (s.copyCount||0) + 1;
+      if(db){ db.collection("scripts").doc(s.id).update({copyCount:s.copyCount}).catch(()=>{}); }
+      else { saveLocal(); }
+    }catch(e){}
+  });
+  if(mine){
+    document.getElementById("btnEdit").addEventListener('click', ()=> openModal(s));
+    document.getElementById("btnDelete").addEventListener('click', async ()=>{
+      activeId = null;
+      if(db){
+        scripts = scripts.filter(x=>x.id!==s.id);
+        render();
+        try{ await db.collection("scripts").doc(s.id).delete(); }
+        catch(e){ showNotice("Suppression impossible pour l'instant. Réessaie plus tard."); }
+      } else {
+        scripts = scripts.filter(x=>x.id!==s.id); saveLocal(); render();
+      }
+    });
+  }
+}
+
+/* ===================== modale ajout / édition ===================== */
+const overlay = document.getElementById("overlay");
+let editingId = null;
+
+function openModal(existing){
+  editingId = existing ? existing.id : null;
+  document.getElementById("modalTitle").textContent = existing ? "Modifier le script" : "Nouveau script";
+  document.getElementById("fName").value = existing ? existing.name : "";
+  document.getElementById("fLang").value = existing ? existing.lang : "";
+  document.getElementById("fDesc").value = existing ? (existing.desc||"") : "";
+  document.getElementById("fTags").value = existing ? (existing.tags||[]).join(", ") : "";
+  document.getElementById("fCode").value = existing ? existing.code : "";
+  overlay.classList.add('open');
+}
+document.getElementById("btnAdd").addEventListener('click', ()=> openModal(null));
+document.getElementById("btnCancel").addEventListener('click', ()=> overlay.classList.remove('open'));
+overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+
+document.getElementById("btnSave").addEventListener('click', async ()=>{
+  const name = document.getElementById("fName").value.trim();
+  const code = document.getElementById("fCode").value;
+  if(!name || !code.trim()){ alert("Un nom et un code sont nécessaires."); return; }
+  const payload = {
+    name,
+    lang: document.getElementById("fLang").value.trim() || "texte",
+    desc: document.getElementById("fDesc").value.trim(),
+    tags: document.getElementById("fTags").value.split(',').map(t=>t.trim()).filter(Boolean),
+    code
+  };
+  let saveFailed = false;
+  if(editingId){
+    const i = scripts.findIndex(x=>x.id===editingId);
+    if(i>=0) scripts[i] = Object.assign({}, scripts[i], payload);
+    if(db){
+      try{ await db.collection("scripts").doc(editingId).update(payload); }
+      catch(e){ saveFailed = true; }
+    } else {
+      saveLocal();
+    }
+    activeId = editingId;
+  } else {
+    payload.ownerId = myId;
+    payload.createdAt = Date.now();
+    if(db){
+      const tempId = "_tmp_" + Math.random().toString(36).slice(2);
+      scripts.unshift(Object.assign({id:tempId}, payload));
+      activeId = tempId;
+      try{
+        const ref = await db.collection("scripts").add(payload);
+        activeId = ref.id;
+      }catch(e){ saveFailed = true; }
+    } else {
+      payload.id = "s_" + Math.random().toString(36).slice(2);
+      scripts.unshift(payload); activeId = payload.id; saveLocal();
+    }
+  }
+  overlay.classList.remove('open');
+  render();
+  if(saveFailed) showNotice("Enregistrement impossible pour l'instant. Réessaie plus tard.");
+});
+
+document.getElementById("search").addEventListener('input', render);
+document.getElementById("tagFilter").addEventListener('change', e=>{ activeTag = e.target.value; render(); });
+document.getElementById("sortBy").addEventListener('change', e=>{ sortBy = e.target.value; render(); });
+
+/* ===================== assistant IA ===================== */
+let sampleCap = null;
+let chatTurns = []; // {role:'user'|'assistant', content:string}
+let chatBusy = false;
+
+async function initAssistant(){
+  try{ sampleCap = await claude.use("sample"); }catch(e){ sampleCap = null; }
+}
+
+function scriptsContext(){
+  if(scripts.length===0) return "La bibliothèque est vide pour l'instant.";
+  const lines = scripts.slice(0, 80).map(s=>
+    `- "${s.name}" (${s.lang||'?'}) par ${ownerLabel(s)} — ${(s.desc||'sans description').slice(0,140)}${s.tags&&s.tags.length?` [tags: ${s.tags.join(', ')}]`:''}`
+  );
+  return `Voici les scripts actuellement dans la bibliothèque Osnit :\n${lines.join('\n')}`;
+}
+
+function addBubble(role, text){
+  const log = document.getElementById("chatLog");
+  const intro = log.querySelector('.chat-intro');
+  if(intro) intro.remove();
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+document.getElementById("chatForm").addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(chatBusy) return;
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = "";
+
+  const isFirst = chatTurns.length===0;
+  const userContent = isFirst
+    ? `Tu es l'assistant intégré à Osnit, une bibliothèque de scripts open source. Aide la personne à trouver un script pertinent, à comprendre un langage ou un tag, ou propose-lui des idées de scripts à ajouter. Réponds en français, de façon brève et concrète. Ne recommande que des scripts qui figurent réellement dans le contexte ci-dessous.\n\n${scriptsContext()}\n\nQuestion : ${text}`
+    : text;
+
+  chatTurns.push({ role:"user", content:userContent });
+  addBubble('user', text);
+  const botDiv = addBubble('assistant', "…");
+  chatBusy = true;
+  document.getElementById("chatSend").disabled = true;
+
+  try{
+    if(!sampleCap) throw new Error("unavailable");
+    const result = await sampleCap(chatTurns, {
+      onText: ({text: partial}) => { botDiv.textContent = partial; document.getElementById("chatLog").scrollTop = 1e9; }
+    });
+    botDiv.textContent = result.text;
+    chatTurns.push({ role:"assistant", content: result.text });
+  } catch(err){
+    botDiv.className = "chat-bubble error";
+    botDiv.textContent = "L'assistant n'est pas disponible ici pour le moment.";
+    chatTurns.pop();
+  } finally {
+    chatBusy = false;
+    document.getElementById("chatSend").disabled = false;
+  }
+});
+
+initAssistant();
+initBackend();
+
+/* ===================== couleur d'accent ===================== */
+const ACCENT_KEY = "osnit.accent.v1";
+const ACCENT_NAMES = ["green","blue","red","orange","purple"];
+const ACCENT_HEX = { green:"#0E7C5A", blue:"#1D63D1", red:"#C4342A", orange:"#C15A1E", purple:"#6D3FC4" };
+
+function applyAccent(name, persist){
+  if(!ACCENT_NAMES.includes(name)) name = "green";
+  if(name==="green") document.documentElement.removeAttribute("data-accent");
+  else document.documentElement.setAttribute("data-accent", name);
+  if(persist!==false){ try{ localStorage.setItem(ACCENT_KEY, name); }catch(e){} }
+  renderAccentSwatches();
+}
+function renderAccentSwatches(){
+  const current = document.documentElement.getAttribute("data-accent") || "green";
+  const el = document.getElementById("accentSwatches");
+  el.innerHTML = ACCENT_NAMES.map(n=>`<button class="swatch ${n===current?'active':''}" data-accent-choice="${n}" style="background:${ACCENT_HEX[n]}" title="Couleur ${n}"></button>`).join('');
+  el.querySelectorAll('.swatch').forEach(b=> b.addEventListener('click', ()=> applyAccent(b.dataset.accentChoice)));
+}
+(function initAccent(){
+  let saved = "green";
+  try{ saved = localStorage.getItem(ACCENT_KEY) || "green"; }catch(e){}
+  applyAccent(saved, false);
+})();
+
+/* ===================== bannière de bienvenue ===================== */
+const WELCOME_KEY = "osnit.seenWelcome.v1";
+function initWelcome(){
+  let seen = false;
+  try{ seen = localStorage.getItem(WELCOME_KEY) === "1"; }catch(e){}
+  if(seen) return;
+  const el = document.getElementById("welcomeBanner");
+  el.innerHTML = `
+    <div class="welcome">
+      <div class="welcome-text">
+        <strong>Bienvenue sur Osnit.</strong>
+        <span> Trouve, partage et réutilise des scripts utiles — ou demande à l'assistant de t'en dénicher un.</span>
+      </div>
+      <div class="welcome-actions">
+        <button class="primary" id="welcomeAdd">+ Ajouter un script</button>
+        <button class="icon" id="welcomeDismiss" title="Fermer">${ICONS.close}</button>
+      </div>
+    </div>
+  `;
+  const dismiss = ()=>{
+    try{ localStorage.setItem(WELCOME_KEY, "1"); }catch(e){}
+    el.innerHTML = "";
+  };
+  document.getElementById("welcomeDismiss").addEventListener('click', dismiss);
+  document.getElementById("welcomeAdd").addEventListener('click', ()=>{ dismiss(); openModal(null); });
+}
+initWelcome();
+</script>
+</body>
+</html>
